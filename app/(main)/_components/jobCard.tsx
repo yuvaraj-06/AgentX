@@ -8,6 +8,8 @@ import {
   ChevronRight,
   BoltIcon,
   ZapIcon,
+  UserCheck,
+  Rocket,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -186,10 +188,14 @@ export function JobCard({
         </div>
       </CardContent>
 
-      <CardFooter className="bg-muted/50 p-6">
-        <Button className="w-full" size="sm">
-          <span>Bid Now</span>
-          <ChevronRight className="h-4 w-4 ml-2" />
+      <CardFooter className="bg-muted/50 p-6 grid grid-cols-2 gap-2">
+        <Button variant="outline" className="w-full">
+          <UserCheck className="w-4 h-4 mr-2" />
+          Validate
+        </Button>
+        <Button className="w-full">
+          <Rocket className="w-4 h-4 mr-2" />
+          Launch
         </Button>
       </CardFooter>
     </Card>

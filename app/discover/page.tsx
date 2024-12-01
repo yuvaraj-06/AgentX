@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Key } from "react";
 import { DashboardLayout } from "@/components/dashboard-layout";
 import { JobCard } from "@/app/(main)/_components/jobCard";
 import { Button } from "@/components/ui/button";
@@ -23,8 +23,11 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Filter, Plus } from "lucide-react";
+import { BriefcaseIcon, ClockIcon, Filter, Plus, Users2 } from "lucide-react";
 import { TaskCreationModal } from "../(main)/_components/taskCreationModal";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { AgentCard } from "../(main)/_components/agentCard";
+import { InProgressCard } from "../(main)/_components/inProgressCard";
 
 const mockJobs = [
   {
@@ -123,8 +126,84 @@ const mockJobs = [
   },
 ];
 
+const mockAgents = [
+  {
+    name: "Xenon",
+    title: "An active listener to crypto RSS feeds",
+    avatarUrl: "/avatars/avatar1.png",
+    rating: 92,
+    successRate: 95,
+    experience: "8 years",
+    location: "San Francisco, CA",
+    salary: "$120k - $150k",
+    employmentType: "Full-time",
+    linkedIn: "LinkedIn",
+    requirements: "Not Required",
+    company: "TechCorp Inc.",
+    updateFrequency: "Every 3 years",
+    tools: ["Kubernetes", "Docker", "AWS"],
+  },
+  {
+    name: "Sarah Miller",
+    title: "AI Research Scientist",
+    avatarUrl: "/avatars/avatar2.png",
+    rating: 95,
+    successRate: 98,
+    experience: "6 years",
+    location: "Boston, MA",
+    salary: "$140k - $180k",
+    employmentType: "Full-time",
+    linkedIn: "LinkedIn",
+    requirements: "PhD Required",
+    company: "AI Solutions Ltd",
+    updateFrequency: "Every 2 years",
+    tools: ["PyTorch", "TensorFlow", "Python"],
+  },
+  // Add more mock agents as needed
+];
+
+const mockInProgressTasks = [
+  {
+    title: "Optimize Machine Learning Model",
+    description:
+      "Fine-tune and optimize the existing ML model for better performance and accuracy.",
+    type: "AI" as const,
+    tools: ["TensorFlow", "Scikit-learn", "Python"],
+    automationLevel: 4,
+    humanInteraction: 2,
+    duration: "20 hours",
+    bounty: 12000,
+    expertise: "Expert",
+    totalSlots: 3,
+    filledSlots: 3,
+    priority: "High" as const,
+    isConfidential: false,
+    progress: 65,
+  },
+  {
+    title: "Develop Natural Language Processing Pipeline",
+    description:
+      "Create an NLP pipeline for sentiment analysis and entity recognition.",
+    type: "AI+Human" as const,
+    tools: ["NLTK", "SpaCy", "Transformers"],
+    automationLevel: 3,
+    humanInteraction: 3,
+    duration: "40 hours",
+    bounty: 18000,
+    expertise: "Advanced",
+    totalSlots: 4,
+    filledSlots: 4,
+    priority: "Medium" as const,
+    isConfidential: true,
+    progress: 30,
+  },
+  // Add more mock in-progress tasks as needed
+];
+
 export default function DiscoveryPage() {
+  const [view, setView] = useState("tasks"); // "tasks" or "agents"
   const [jobs, setJobs] = useState(mockJobs);
+  const [agents] = useState(mockAgents);
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [minBounty, setMinBounty] = useState(0);
@@ -160,12 +239,22 @@ export default function DiscoveryPage() {
         const priorityOrder = { High: 3, Medium: 2, Low: 1 };
         return priorityOrder[b.priority] - priorityOrder[a.priority];
       }
-      return 0; // For "newest", assume the original order is by date
+      return 0;
     });
 
+  const filteredAgents = agents.filter(
+    (agent) =>
+      agent.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      agent.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const filteredInProgressTasks = mockInProgressTasks.filter(
+    (task) =>
+      task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      task.description.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   const handleCreateTask = (taskData: any) => {
-    // Here you would typically send the task data to your backend
-    // For now, we'll just log it and add it to the jobs list
     console.log("New task created:", taskData);
     addLog(`New task created: ${taskData.taskName}`);
 
@@ -174,7 +263,7 @@ export default function DiscoveryPage() {
       description: taskData.taskDescription,
       type: taskData.humanInvolvement ? "AI+Human" : "AI",
       tools: [taskData.selectedAgent],
-      automationLevel: 3, // This could be calculated based on the task data
+      automationLevel: 3,
       humanInteraction: taskData.humanInvolvement ? 3 : 1,
       duration: `${taskData.duration} hours`,
       bounty: taskData.totalCost,
@@ -182,7 +271,7 @@ export default function DiscoveryPage() {
       totalSlots: 5,
       filledSlots: 0,
       priority: taskData.priority,
-      isConfidential: false, // You might want to add this as an option in the modal
+      isConfidential: false,
     };
 
     setJobs([newJob, ...jobs]);
@@ -275,64 +364,113 @@ export default function DiscoveryPage() {
   return (
     <DashboardLayout>
       <div className="space-y-6">
-        <div className="flex justify-between items-center">
-          <h2 className="text-2xl font-bold">Available Tasks</h2>
-          <div className="flex items-center space-x-2">
-            <Input
-              type="search"
-              placeholder="Search tasks..."
-              className="max-w-xs"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                addLog(`Search query: ${e.target.value}`);
-              }}
-            />
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Filter className="h-4 w-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent>
-                <SheetHeader>
-                  <SheetTitle>Filter Options</SheetTitle>
-                </SheetHeader>
-                {filterPanel}
-              </SheetContent>
-            </Sheet>
-            <Button
-              className="w-auto"
-              size="sm"
-              onClick={() => setIsTaskModalOpen(true)}
-            >
-              <span>Create Task</span>
-              <Plus className="h-4 w-4 ml-2" />
-            </Button>
+        <div className="flex flex-col space-y-4">
+          <Tabs value={view} onValueChange={setView} className="self-start">
+            <TabsList className="grid w-[400px] grid-cols-3">
+              <TabsTrigger value="tasks" className="flex items-center gap-2">
+                <BriefcaseIcon className="w-4 h-4" />
+                Tasks
+              </TabsTrigger>
+              <TabsTrigger
+                value="inprogress"
+                className="flex items-center gap-2"
+              >
+                <ClockIcon className="w-4 h-4" />
+                In Progress
+              </TabsTrigger>
+              <TabsTrigger value="agents" className="flex items-center gap-2">
+                <Users2 className="w-4 h-4" />
+                Agents
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+
+          <div className="flex flex-col space-y-4 sm:flex-row sm:justify-between sm:items-center">
+            <h2 className="text-2xl font-bold">Discovery</h2>
+            <div className="flex items-center space-x-2">
+              <Input
+                type="search"
+                placeholder={`Search ${view}...`}
+                className="max-w-xs"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  addLog(`Search query: ${e.target.value}`);
+                }}
+              />
+              {view === "tasks" && (
+                <>
+                  <Sheet>
+                    <SheetTrigger asChild>
+                      <Button variant="outline" size="icon" className="p-4">
+                        <Filter className="h-4 w-4" />
+                      </Button>
+                    </SheetTrigger>
+                    <SheetContent>
+                      <SheetHeader>
+                        <SheetTitle>Filter Options</SheetTitle>
+                      </SheetHeader>
+                      {filterPanel}
+                    </SheetContent>
+                  </Sheet>
+                  <Button
+                    className="w-auto"
+                    size="sm"
+                    onClick={() => setIsTaskModalOpen(true)}
+                  >
+                    <span>Create Task</span>
+                    <Plus className="h-4 w-4 ml-2" />
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
+
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredJobs.map((job, index) => (
-            <JobCard key={index} {...job} />
-          ))}
+          {view === "tasks" &&
+            filteredJobs.map((job, index) => <JobCard key={index} {...job} />)}
+          {view === "inprogress" &&
+            filteredInProgressTasks.map(
+              (task: any, index: Key | null | undefined) => (
+                <InProgressCard key={index} {...task} />
+              )
+            )}
+          {view === "agents" &&
+            filteredAgents.map((agent, index) => (
+              <AgentCard
+                completionRate={0}
+                description={""}
+                key={index}
+                {...agent}
+              />
+            ))}
         </div>
-        {filteredJobs.length === 0 && (
+
+        {((view === "tasks" && filteredJobs.length === 0) ||
+          (view === "agents" && filteredAgents.length === 0) ||
+          (view === "inprogress" && filteredInProgressTasks.length === 0)) && (
           <div className="text-center py-10">
             <p className="text-gray-500">
-              No tasks match your current filters.
+              No {view === "inprogress" ? "tasks" : view} match your current
+              filters.
             </p>
           </div>
         )}
-        {filteredJobs.length > 0 && filteredJobs.length % 3 === 0 && (
-          <div className="mt-8 text-center">
-            <Button
-              variant="outline"
-              onClick={() => addLog("Load More Tasks clicked")}
-            >
-              Load More Tasks
-            </Button>
-          </div>
-        )}
+
+        {view === "tasks" &&
+          filteredJobs.length > 0 &&
+          filteredJobs.length % 3 === 0 && (
+            <div className="mt-8 text-center">
+              <Button
+                variant="outline"
+                onClick={() => addLog("Load More Tasks clicked")}
+              >
+                Load More Tasks
+              </Button>
+            </div>
+          )}
+
         <Card>
           <CardHeader>
             <CardTitle>Activity Logs</CardTitle>
