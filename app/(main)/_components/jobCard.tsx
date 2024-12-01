@@ -6,6 +6,8 @@ import {
   BarChart,
   Users,
   ChevronRight,
+  BoltIcon,
+  ZapIcon,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -145,7 +147,7 @@ export function JobCard({
           </div>
 
           <div className="flex items-center font-medium">
-            <GemIcon className="h-4 w-4 mr-2 text-blue-500" />
+            <ZapIcon className="h-4 w-4 mr-2 text-yellow-600" />
             <span>{bounty ? `${bounty.toLocaleString()} coins` : "N/A"}</span>
           </div>
         </div>

@@ -23,7 +23,8 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Filter } from "lucide-react";
+import { Filter, Plus } from "lucide-react";
+import { TaskCreationModal } from "../(main)/_components/taskCreationModal";
 
 const mockJobs = [
   {
@@ -131,6 +132,7 @@ export default function DiscoveryPage() {
   const [showConfidential, setShowConfidential] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
+  const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
 
   const addLog = (message: string) => {
     setLogs((prevLogs) => [
@@ -161,8 +163,33 @@ export default function DiscoveryPage() {
       return 0; // For "newest", assume the original order is by date
     });
 
+  const handleCreateTask = (taskData: any) => {
+    // Here you would typically send the task data to your backend
+    // For now, we'll just log it and add it to the jobs list
+    console.log("New task created:", taskData);
+    addLog(`New task created: ${taskData.taskName}`);
+
+    const newJob = {
+      title: taskData.taskName,
+      description: taskData.taskDescription,
+      type: taskData.humanInvolvement ? "AI+Human" : "AI",
+      tools: [taskData.selectedAgent],
+      automationLevel: 3, // This could be calculated based on the task data
+      humanInteraction: taskData.humanInvolvement ? 3 : 1,
+      duration: `${taskData.duration} hours`,
+      bounty: taskData.totalCost,
+      expertise: taskData.expertise,
+      totalSlots: 5,
+      filledSlots: 0,
+      priority: taskData.priority,
+      isConfidential: false, // You might want to add this as an option in the modal
+    };
+
+    setJobs([newJob, ...jobs]);
+  };
+
   const filterPanel = (
-    <div className="space-y-4 mt-4">
+    <div className="space-y-4">
       <div>
         <Label htmlFor="typeFilter">Task Type</Label>
         <Select
@@ -274,6 +301,14 @@ export default function DiscoveryPage() {
                 {filterPanel}
               </SheetContent>
             </Sheet>
+            <Button
+              className="w-auto"
+              size="sm"
+              onClick={() => setIsTaskModalOpen(true)}
+            >
+              <span>Create Task</span>
+              <Plus className="h-4 w-4 ml-2" />
+            </Button>
           </div>
         </div>
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
@@ -313,6 +348,11 @@ export default function DiscoveryPage() {
           </CardContent>
         </Card>
       </div>
+      <TaskCreationModal
+        isOpen={isTaskModalOpen}
+        onClose={() => setIsTaskModalOpen(false)}
+        onCreateTask={handleCreateTask}
+      />
     </DashboardLayout>
   );
 }
