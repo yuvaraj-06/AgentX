@@ -8,91 +8,97 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Clock,
-  MessageSquare,
+  Power,
+  Radio,
+  BarChart2,
   CheckCircle2,
+  Shield,
+  FileSearch,
+  Wallet,
+  ArrowRightLeft,
+  CheckCircle,
   Loader2,
-  Send,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
+
+interface ProgressStep {
+  id: number;
+  message: string;
+  icon: string; // Icon name as string
+  status: "done" | "inProgress" | "pending";
+  detail: string;
+}
 
 interface ProgressModalProps {
   isOpen: boolean;
   onClose: () => void;
   taskName: string;
+  taskId: string; // Add taskId prop to fetch specific task progress
 }
 
-const mockProgressSteps = [
-  {
-    id: 1,
-    message: "7am — Initiate hourly tasks",
-    icon: Clock,
-    status: "done",
-    detail: "",
-  },
-  {
-    id: 2,
-    message: "I need to check emails to see which ones need responses",
-    icon: MessageSquare,
-    status: "pending",
-    detail: "",
-  },
-  {
-    id: 3,
-    message: "Fetching emails",
-    icon: Loader2,
-    status: "done",
-    detail: "Done",
-  },
-  {
-    id: 4,
-    message: "There are 5 that need responses",
-    icon: MessageSquare,
-    status: "pending",
-    detail: "",
-  },
-  {
-    id: 5,
-    message: "I need to check the CRM for more details",
-    icon: MessageSquare,
-    status: "pending",
-    detail: "",
-  },
-  {
-    id: 6,
-    message: "Fetching CRM details",
-    icon: Loader2,
-    status: "done",
-    detail: "Done",
-  },
-  {
-    id: 7,
-    message: "Composing reply",
-    icon: MessageSquare,
-    status: "pending",
-    detail: "Hi Gerald! +36 words",
-  },
-  {
-    id: 8,
-    message: "Sending reply",
-    icon: Send,
-    status: "inProgress",
-    detail: "",
-  },
-];
+// Map of icon names to Lucide components
+const iconMap = {
+  Power,
+  Radio,
+  BarChart2,
+  CheckCircle2,
+  Shield,
+  FileSearch,
+  Wallet,
+  ArrowRightLeft,
+  CheckCircle,
+  Loader2,
+};
 
 export function ProgressModal({
   isOpen,
   onClose,
   taskName,
+  taskId,
 }: ProgressModalProps) {
   const [currentStepIndex, setCurrentStepIndex] = useState(0);
   const [visibleSteps, setVisibleSteps] = useState<number[]>([]);
+  const [progressSteps, setProgressSteps] = useState<ProgressStep[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
+  // Fetch progress steps when modal opens
   useEffect(() => {
-    if (isOpen && currentStepIndex < mockProgressSteps.length) {
+    const fetchProgressSteps = async () => {
+      if (!isOpen) return;
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await fetch(`/api/getTaskProgress/${taskId}`);
+        if (!response.ok) throw new Error("Failed to fetch progress steps");
+
+        const data = await response.json();
+        setProgressSteps(data);
+        // Reset progress animation
+        setCurrentStepIndex(0);
+        setVisibleSteps([]);
+      } catch (err) {
+        setError(err.message);
+        console.error("Error fetching progress steps:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProgressSteps();
+  }, [isOpen, taskId]);
+
+  // Handle progress animation
+  useEffect(() => {
+    if (
+      isOpen &&
+      !isLoading &&
+      progressSteps.length > 0 &&
+      currentStepIndex < progressSteps.length
+    ) {
       const timer = setTimeout(() => {
         setVisibleSteps((prev) => [...prev, currentStepIndex]);
         setCurrentStepIndex((prev) => prev + 1);
@@ -100,25 +106,43 @@ export function ProgressModal({
 
       return () => clearTimeout(timer);
     }
-  }, [isOpen, currentStepIndex]);
+  }, [isOpen, currentStepIndex, isLoading, progressSteps.length]);
 
-  useEffect(() => {
-    if (isOpen) {
-      setCurrentStepIndex(0);
-      setVisibleSteps([]);
-    }
-  }, [isOpen]);
-
+  // Auto-scroll to latest step
   useEffect(() => {
     if (containerRef.current) {
       containerRef.current.scrollTop = containerRef.current.scrollHeight;
     }
   }, [visibleSteps]);
 
+  if (isLoading) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[600px] h-[80vh] bg-white text-black p-0">
+          <div className="flex items-center justify-center h-full">
+            <Loader2 className="w-8 h-8 animate-spin text-gray-500" />
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  if (error) {
+    return (
+      <Dialog open={isOpen} onOpenChange={onClose}>
+        <DialogContent className="sm:max-w-[600px] h-[80vh] bg-white text-black p-0">
+          <div className="flex items-center justify-center h-full text-red-500">
+            {error}
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[600px] h-[80vh] bg-white border-gray-200 text-black p-0 overflow-hidden">
-        <DialogHeader className="p-6 pb-2 bg-white border-b border-gray-200">
+      <DialogContent className="sm:max-w-[600px] h-[80vh] bg-white text-black p-0 overflow-hidden">
+        <DialogHeader className="p-6 pb-2 bg-white">
           <DialogTitle className="text-xl font-semibold text-black">
             {taskName}
           </DialogTitle>
@@ -129,8 +153,9 @@ export function ProgressModal({
         >
           <AnimatePresence>
             {visibleSteps.map((stepIndex, index) => {
-              const step = mockProgressSteps[stepIndex];
-              const StepIcon = step.icon;
+              const step = progressSteps[stepIndex];
+              const StepIcon =
+                iconMap[step.icon as keyof typeof iconMap] || CheckCircle;
               const isLatest = index === visibleSteps.length - 1;
 
               return (
@@ -149,7 +174,7 @@ export function ProgressModal({
                     transition: { duration: 0.2 },
                   }}
                   className={cn(
-                    "mb-4 bg-gray-100 rounded-lg p-4 border border-gray-200 shadow-sm",
+                    "mb-4 bg-white rounded-lg p-4 shadow-sm",
                     isLatest ? "z-10" : "z-0"
                   )}
                 >

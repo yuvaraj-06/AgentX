@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { GemIcon, Lock, Clock, BarChart, Users, Eye } from "lucide-react";
+import {
+  GemIcon,
+  Lock,
+  Clock,
+  BarChart,
+  Users,
+  Eye,
+  DollarSign,
+} from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
@@ -21,8 +29,7 @@ interface InProgressCardProps {
   tools: string[];
   automationLevel: number;
   humanInteraction: number;
-  duration: string;
-  bounty: number;
+  hourlyRate: string;
   expertise: string;
   totalSlots: number;
   filledSlots: number;
@@ -38,8 +45,7 @@ export function InProgressCard({
   tools,
   automationLevel,
   humanInteraction,
-  duration,
-  bounty,
+  hourlyRate,
   expertise,
   totalSlots,
   filledSlots,
@@ -104,15 +110,10 @@ export function InProgressCard({
             </div>
           </div>
 
-          <div className="flex items-center justify-between text-sm">
-            <div className="flex items-center text-muted-foreground">
-              <Clock className="h-4 w-4 mr-2" />
-              <span>{duration}</span>
-            </div>
-
+          <div className="flex items-center justify-end text-sm">
             <div className="flex items-center font-medium">
-              <GemIcon className="h-4 w-4 mr-2 text-blue-500" />
-              <span>{bounty ? `${bounty.toLocaleString()} coins` : "N/A"}</span>
+              <DollarSign className="h-4 w-4 text-green-600" />
+              <span>{hourlyRate}</span>
             </div>
           </div>
 

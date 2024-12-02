@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, useEffect, Key } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/dashboard-layout";
-import { JobCard } from "@/app/(main)/_components/jobCard";
+import { JobCard } from "../(main)/_components/jobCard";
+import { AgentCard } from "../(main)/_components/agentCard";
+import { InProgressCard } from "../(main)/_components/inProgressCard";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -23,53 +25,51 @@ import { Slider } from "@/components/ui/slider";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BriefcaseIcon, ClockIcon, Filter, Plus, Users2 } from "lucide-react";
+import { Filter, Plus, BriefcaseIcon, Users2, ClockIcon } from "lucide-react";
 import { TaskCreationModal } from "../(main)/_components/taskCreationModal";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { AgentCard } from "../(main)/_components/agentCard";
-import { InProgressCard } from "../(main)/_components/inProgressCard";
 
 const mockJobs = [
   {
-    title: "Run A/B Tests on LinkedIn and Meta Ads",
-    description: "Optimize ad creatives and targeting through A/B testing.",
-    type: "AI+Human" as const,
-    tools: ["Share AI BDR", "Perplexity"],
-    automationLevel: 2,
-    humanInteraction: 3,
-    duration: "30 hours",
-    bounty: 10000,
-    expertise: "Intermediate",
+    title: "DeFi Yield Optimization Bot",
+    description:
+      "Create an AI bot that monitors and automatically rebalances DeFi positions for optimal yields across multiple chains",
+    type: "AI" as const,
+    tools: ["Python", "Web3.py", "DefiLlama API"],
+    automationLevel: 5,
+    humanInteraction: 1,
+    hourlyRate: "30/hr",
+    expertise: "Expert",
     totalSlots: 5,
     filledSlots: 2,
     priority: "High" as const,
     isConfidential: true,
   },
   {
-    title: "Generate Product Descriptions",
-    description: "Create compelling product descriptions using AI tools.",
-    type: "AI" as const,
-    tools: ["GPT-4", "Copy.ai"],
+    title: "NFT Rarity Analyzer",
+    description:
+      "Build an AI system to analyze NFT collections and predict potential value based on trait rarity and market trends",
+    type: "AI+Human" as const,
+    tools: ["OpenSea API", "GPT-4", "PyTorch"],
     automationLevel: 4,
-    humanInteraction: 1,
-    duration: "12 hours",
-    bounty: 5000,
-    expertise: "Beginner",
+    humanInteraction: 2,
+    hourlyRate: "28/hr",
+    expertise: "Advanced",
     totalSlots: 5,
     filledSlots: 3,
     priority: "Medium" as const,
     isConfidential: false,
   },
   {
-    title: "Develop ML Model for Customer Churn Prediction",
+    title: "Crypto Sentiment Analysis Engine",
     description:
-      "Create and train a machine learning model to predict customer churn.",
+      "Develop a real-time sentiment analysis system for crypto markets using social media and news sources",
     type: "AI" as const,
-    tools: ["TensorFlow", "Scikit-learn", "Pandas"],
+    tools: ["BERT", "Twitter API", "NewsAPI"],
     automationLevel: 5,
-    humanInteraction: 2,
-    duration: "40 hours",
-    bounty: 15000,
+    humanInteraction: 1,
+
+    hourlyRate: "26/hr",
     expertise: "Expert",
     totalSlots: 5,
     filledSlots: 1,
@@ -77,50 +77,77 @@ const mockJobs = [
     isConfidential: true,
   },
   {
-    title: "Content Moderation for Social Media Platform",
+    title: "Market Making Bot for DEXes",
     description:
-      "Implement AI-assisted content moderation system for a social media platform.",
+      "Create an automated market maker bot for decentralized exchanges with ML-based pricing strategies",
     type: "AI+Human" as const,
-    tools: ["OpenAI API", "Custom NLP Models"],
-    automationLevel: 3,
-    humanInteraction: 4,
-    duration: "50 hours",
-    bounty: 12000,
-    expertise: "Advanced",
+    tools: ["UniswapV3 SDK", "TensorFlow", "Ethers.js"],
+    automationLevel: 4,
+    humanInteraction: 2,
+    hourlyRate: "16/hr",
+    expertise: "Expert",
     totalSlots: 5,
     filledSlots: 2,
+    priority: "High" as const,
+    isConfidential: true,
+  },
+  {
+    title: "Smart Contract Vulnerability Scanner",
+    description:
+      "Develop an AI-powered scanner to detect vulnerabilities in smart contracts across multiple chains",
+    type: "AI" as const,
+    tools: ["Slither", "Mythril", "Custom ML Models"],
+    automationLevel: 5,
+    humanInteraction: 1,
+    hourlyRate: "18/hr",
+    expertise: "Advanced",
+    totalSlots: 5,
+    filledSlots: 3,
     priority: "High" as const,
     isConfidential: false,
   },
   {
-    title: "Chatbot Development for Customer Support",
+    title: "Crypto Whale Activity Monitor",
     description:
-      "Design and implement an AI-powered chatbot for customer support.",
-    type: "AI" as const,
-    tools: ["Dialogflow", "Node.js"],
+      "Build a system to track and analyze large wallet movements with ML-based pattern recognition",
+    type: "AI+Human" as const,
+    tools: ["Etherscan API", "Graph Protocol", "scikit-learn"],
     automationLevel: 4,
     humanInteraction: 2,
-    duration: "25 hours",
-    bounty: 8000,
+    hourlyRate: "14/hr",
     expertise: "Intermediate",
     totalSlots: 5,
-    filledSlots: 4,
+    filledSlots: 1,
     priority: "Medium" as const,
     isConfidential: false,
   },
   {
-    title: "Data Annotation for Autonomous Vehicles",
+    title: "Cross-chain Arbitrage Bot",
     description:
-      "Annotate image and video data for training autonomous vehicle AI models.",
-    type: "Human" as const,
-    tools: ["LabelImg", "CVAT"],
-    automationLevel: 1,
-    humanInteraction: 5,
-    duration: "60 hours",
-    bounty: 7000,
-    expertise: "Beginner",
+      "Develop an AI-powered arbitrage bot that identifies and executes profitable trades across different blockchain networks",
+    type: "AI" as const,
+    tools: ["1inch API", "Custom ML Models", "Web3"],
+    automationLevel: 5,
+    humanInteraction: 1,
+    hourlyRate: "22/hr",
+    expertise: "Expert",
     totalSlots: 5,
-    filledSlots: 1,
+    filledSlots: 2,
+    priority: "High" as const,
+    isConfidential: true,
+  },
+  {
+    title: "DAO Proposal Analyzer",
+    description:
+      "Create an AI system to analyze and summarize DAO proposals with impact predictions",
+    type: "AI+Human" as const,
+    tools: ["GPT-4", "Snapshot API", "Custom NLP Models"],
+    automationLevel: 3,
+    humanInteraction: 3,
+    hourlyRate: "26/hr",
+    expertise: "Intermediate",
+    totalSlots: 5,
+    filledSlots: 4,
     priority: "Low" as const,
     isConfidential: false,
   },
@@ -128,82 +155,67 @@ const mockJobs = [
 
 const mockAgents = [
   {
-    name: "Xenon",
-    title: "An active listener to crypto RSS feeds",
-    avatarUrl: "/avatars/avatar1.png",
-    rating: 92,
-    successRate: 95,
-    experience: "8 years",
-    location: "San Francisco, CA",
-    salary: "$120k - $150k",
-    employmentType: "Full-time",
-    linkedIn: "LinkedIn",
-    requirements: "Not Required",
-    company: "TechCorp Inc.",
-    updateFrequency: "Every 3 years",
-    tools: ["Kubernetes", "Docker", "AWS"],
+    name: "Trade alt coins on Base",
+    title: "Base Chain Alt Coin Trading Specialist",
+    avatarUrl: "/avatars/avatar5.png",
+    rating: 94,
+    successRate: 96,
+    completionRate: 99,
+    tools: [
+      "CoinDesk API",
+      "CoinTelegraph Feed",
+      "Python",
+      "Web3.py",
+      "TradingView",
+    ],
   },
   {
-    name: "Sarah Miller",
-    title: "AI Research Scientist",
+    name: "Meme coin social fi trader",
+    title: "Social-Fi Meme Trading Analyst",
     avatarUrl: "/avatars/avatar2.png",
-    rating: 95,
-    successRate: 98,
-    experience: "6 years",
-    location: "Boston, MA",
-    salary: "$140k - $180k",
-    employmentType: "Full-time",
-    linkedIn: "LinkedIn",
-    requirements: "PhD Required",
-    company: "AI Solutions Ltd",
-    updateFrequency: "Every 2 years",
-    tools: ["PyTorch", "TensorFlow", "Python"],
+    rating: 97,
+    successRate: 92,
+    completionRate: 98,
+    tools: ["The Block", "Decrypt", "Twitter API", "Reddit API", "GPT-4"],
   },
-  // Add more mock agents as needed
+  {
+    name: "Develop ML Model for Customer Churn Prediction",
+    title: "ML Customer Behavior Prediction Expert",
+    avatarUrl: "/avatars/avatar3.png",
+    rating: 88,
+    successRate: 85,
+    completionRate: 94,
+    tools: ["TensorFlow", "Scikit-learn", "Pandas", "Python", "Jupyter"],
+  },
+  {
+    name: "Content Moderation for Social Media Platform",
+    title: "AI Content Moderation Systems Engineer",
+    avatarUrl: "/avatars/avatar4.png",
+    rating: 96,
+    successRate: 94,
+    completionRate: 99,
+    tools: ["OpenAI API", "Custom NLP Models", "Python", "MongoDB", "Redis"],
+  },
+  {
+    name: "Chatbot Development for Customer Support",
+    title: "AI Conversational Systems Architect",
+    avatarUrl: "/avatars/avatar1.png",
+    rating: 99,
+    successRate: 97,
+    completionRate: 100,
+    tools: ["Dialogflow", "Node.js", "GPT-4", "MongoDB", "Redis"],
+  },
 ];
 
-const mockInProgressTasks = [
-  {
-    title: "Optimize Machine Learning Model",
-    description:
-      "Fine-tune and optimize the existing ML model for better performance and accuracy.",
-    type: "AI" as const,
-    tools: ["TensorFlow", "Scikit-learn", "Python"],
-    automationLevel: 4,
-    humanInteraction: 2,
-    duration: "20 hours",
-    bounty: 12000,
-    expertise: "Expert",
-    totalSlots: 3,
-    filledSlots: 3,
-    priority: "High" as const,
-    isConfidential: false,
-    progress: 65,
-  },
-  {
-    title: "Develop Natural Language Processing Pipeline",
-    description:
-      "Create an NLP pipeline for sentiment analysis and entity recognition.",
-    type: "AI+Human" as const,
-    tools: ["NLTK", "SpaCy", "Transformers"],
-    automationLevel: 3,
-    humanInteraction: 3,
-    duration: "40 hours",
-    bounty: 18000,
-    expertise: "Advanced",
-    totalSlots: 4,
-    filledSlots: 4,
-    priority: "Medium" as const,
-    isConfidential: true,
-    progress: 30,
-  },
-  // Add more mock in-progress tasks as needed
-];
+const mockInProgressTasks = [];
 
 export default function DiscoveryPage() {
-  const [view, setView] = useState("tasks"); // "tasks" or "agents"
-  const [jobs, setJobs] = useState(mockJobs);
-  const [agents] = useState(mockAgents);
+  const [view, setView] = useState("tasks");
+  const [jobs, setJobs] = useState([]);
+  const [agents, setAgents] = useState([]);
+  const [inProgressTasks, setInProgressTasks] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [typeFilter, setTypeFilter] = useState("all");
   const [sortBy, setSortBy] = useState("newest");
   const [minBounty, setMinBounty] = useState(0);
@@ -212,6 +224,59 @@ export default function DiscoveryPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [logs, setLogs] = useState<string[]>([]);
   const [isTaskModalOpen, setIsTaskModalOpen] = useState(false);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      try {
+        // Fetch tasks
+        const tasksResponse = await fetch("/api/getTasks");
+        const tasksData = await tasksResponse.json();
+        setJobs(tasksData);
+        addLog("Tasks loaded successfully");
+
+        // Fetch agents
+        const agentsResponse = await fetch("/api/getAgents");
+        const agentsData = await agentsResponse.json();
+        setAgents(agentsData);
+        addLog("Agents loaded successfully");
+
+        // Fetch in-progress tasks
+        const inProgressResponse = await fetch("/api/getInprogressTasks");
+        const inProgressData = await inProgressResponse.json();
+        setInProgressTasks(inProgressData);
+        addLog("In-progress tasks loaded successfully");
+      } catch (err: any) {
+        setError(err.message);
+        addLog(`Error loading data: ${err.message}`);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  if (error) {
+    return (
+      <DashboardLayout>
+        <div className="text-center py-10">
+          <p className="text-red-500">Error loading data: {error}</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
+  // Handle loading state
+  if (isLoading) {
+    return (
+      <DashboardLayout>
+        <div className="text-center py-10">
+          <p>Loading...</p>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   const addLog = (message: string) => {
     setLogs((prevLogs) => [
@@ -226,7 +291,6 @@ export default function DiscoveryPage() {
 
   const filteredJobs = jobs
     .filter((job) => typeFilter === "all" || job.type === typeFilter)
-    .filter((job) => job.bounty >= minBounty && job.bounty <= maxBounty)
     .filter((job) => showConfidential || !job.isConfidential)
     .filter(
       (job) =>
@@ -234,7 +298,6 @@ export default function DiscoveryPage() {
         job.description.toLowerCase().includes(searchQuery.toLowerCase())
     )
     .sort((a, b) => {
-      if (sortBy === "bounty") return b.bounty - a.bounty;
       if (sortBy === "priority") {
         const priorityOrder = { High: 3, Medium: 2, Low: 1 };
         return priorityOrder[b.priority] - priorityOrder[a.priority];
@@ -248,33 +311,70 @@ export default function DiscoveryPage() {
       agent.title.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const filteredInProgressTasks = mockInProgressTasks.filter(
+  const filteredInProgressTasks = inProgressTasks.filter(
     (task) =>
       task.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       task.description.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
-  const handleCreateTask = (taskData: any) => {
-    console.log("New task created:", taskData);
-    addLog(`New task created: ${taskData.taskName}`);
+  // const handleCreateTask = (taskData: any) => {
+  //   console.log("New task created:", taskData);
+  //   addLog(`New task created: ${taskData.taskName}`);
 
-    const newJob = {
-      title: taskData.taskName,
-      description: taskData.taskDescription,
-      type: taskData.humanInvolvement ? "AI+Human" : "AI",
-      tools: [taskData.selectedAgent],
-      automationLevel: 3,
-      humanInteraction: taskData.humanInvolvement ? 3 : 1,
-      duration: `${taskData.duration} hours`,
-      bounty: taskData.totalCost,
-      expertise: taskData.expertise,
-      totalSlots: 5,
-      filledSlots: 0,
-      priority: taskData.priority,
-      isConfidential: false,
-    };
+  //   const newJob = {
+  //     title: taskData.taskName,
+  //     description: taskData.taskDescription,
+  //     type: taskData.humanInvolvement ? "AI+Human" : "AI",
+  //     tools: [taskData.selectedAgent],
+  //     automationLevel: 3,
+  //     humanInteraction: taskData.humanInvolvement ? 3 : 1,
+  //     hourlyRate: taskData.hourlyRate,
+  //     expertise: taskData.expertise,
+  //     totalSlots: 5,
+  //     filledSlots: 0,
+  //     priority: taskData.priority,
+  //     isConfidential: false,
+  //   };
 
-    setJobs([newJob, ...jobs]);
+  //   setJobs([newJob, ...jobs]);
+  // };
+
+  const handleLaunchJob = async (job) => {
+    try {
+      // Update backend about the job launch
+      await fetch("/api/launchJob", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(job),
+      });
+
+      setJobs(jobs.filter((j) => j.title !== job.title));
+      setInProgressTasks([...inProgressTasks, { ...job, progress: 0 }]);
+      setView("inprogress");
+      addLog(`Job launched: ${job.title}`);
+    } catch (err) {
+      addLog(`Error launching job: ${err.message}`);
+    }
+  };
+
+  const handleCreateTask = async (taskData) => {
+    try {
+      const response = await fetch("/api/createTask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(taskData),
+      });
+
+      const newJob = await response.json();
+      setJobs([newJob, ...jobs]);
+      addLog(`New task created: ${taskData.taskName}`);
+    } catch (err) {
+      addLog(`Error creating task: ${err.message}`);
+    }
   };
 
   const filterPanel = (
@@ -402,7 +502,7 @@ export default function DiscoveryPage() {
                 <>
                   <Sheet>
                     <SheetTrigger asChild>
-                      <Button variant="outline" size="icon" className="p-4">
+                      <Button variant="outline" size="icon" className="p-2">
                         <Filter className="h-4 w-4" />
                       </Button>
                     </SheetTrigger>
@@ -429,21 +529,20 @@ export default function DiscoveryPage() {
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {view === "tasks" &&
-            filteredJobs.map((job, index) => <JobCard key={index} {...job} />)}
+            filteredJobs.map((job, index) => (
+              <JobCard
+                key={index}
+                {...job}
+                onLaunch={() => handleLaunchJob(job)}
+              />
+            ))}
           {view === "inprogress" &&
-            filteredInProgressTasks.map(
-              (task: any, index: Key | null | undefined) => (
-                <InProgressCard key={index} {...task} />
-              )
-            )}
+            filteredInProgressTasks.map((task, index) => (
+              <InProgressCard key={index} {...task} />
+            ))}
           {view === "agents" &&
             filteredAgents.map((agent, index) => (
-              <AgentCard
-                completionRate={0}
-                description={""}
-                key={index}
-                {...agent}
-              />
+              <AgentCard key={index} {...agent} />
             ))}
         </div>
 
