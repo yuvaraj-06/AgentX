@@ -40,9 +40,7 @@
 
 7. **Run the Dashboard**: In a new terminal window, navigate to the dashboard directory.
    ```bash
-   cd ../dashboard
-   python manage.py migrate
-   python manage.py runserver
+   npm run dev
    ```
 
 8. **Access the Web Application**: Open your browser and go to [http://localhost:8000/](http://localhost:8000/).
