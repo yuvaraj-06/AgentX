@@ -5,7 +5,15 @@ from langchain_openai import ChatOpenAI
 from langchain_core.tools import tool
 from langchain.prompts import ChatPromptTemplate, MessagesPlaceholder
 import os
-from tools import reddit_search, twitter, rss_listener, buy_coin, sell_trade, stake
+from tools import reddit_search, twitter, rss_listener
+from defi import (
+    stake_tokens,
+    sell_tokens,
+    send_transaction,
+    get_stake_info,
+    unstake_tokens,
+    buy_tokens,
+)
 
 # Initialize the language model
 llm = ChatOpenAI(temperature=1, model="gpt-4o-mini")
@@ -53,12 +61,28 @@ def create_meme_coin_watcher_agent():
     )
     meme_coin_agent = create_tool_calling_agent(
         llm,
-        [rss_listener, buy_coin],
+        [
+            rss_listener,
+            stake_tokens,
+            sell_tokens,
+            send_transaction,
+            get_stake_info,
+            unstake_tokens,
+            buy_tokens,
+        ],
         meme_coin_prompt,
     )
     meme_coin_executor = AgentExecutor(
         agent=meme_coin_agent,
-        tools=[rss_listener, buy_coin],
+        tools=[
+            rss_listener,
+            stake_tokens,
+            sell_tokens,
+            send_transaction,
+            get_stake_info,
+            unstake_tokens,
+            buy_tokens,
+        ],
         verbose=True,
     )
     return meme_coin_executor
@@ -77,12 +101,30 @@ def create_social_listener_agent():
     )
     social_listener_agent = create_tool_calling_agent(
         llm,
-        [twitter, reddit_search, buy_coin, sell_trade],
+        [
+            twitter,
+            reddit_search,
+            stake_tokens,
+            sell_tokens,
+            send_transaction,
+            get_stake_info,
+            unstake_tokens,
+            buy_tokens,
+        ],
         social_listener_prompt,
     )
     social_listener_executor = AgentExecutor(
         agent=social_listener_agent,
-        tools=[twitter, reddit_search, buy_coin, sell_trade],
+        tools=[
+            twitter,
+            reddit_search,
+            stake_tokens,
+            sell_tokens,
+            send_transaction,
+            get_stake_info,
+            unstake_tokens,
+            buy_tokens,
+        ],
         verbose=True,
     )
     return social_listener_executor

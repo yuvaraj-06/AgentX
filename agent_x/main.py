@@ -37,12 +37,19 @@ class SessionData(BaseModel):
 # Endpoint to list all agents
 @app.get("/agents")
 def list_agents():
-    return {"agents": list(agents.keys())}
+    agents = []
+    return {"agents": agents}
+
+
+@app.get("/tasks")
+def list_tasks():
+    tasks = []
+    return {"tasks": tasks}
 
 
 # Endpoint to create a new agent task
-@app.post("/agents/create")
-def create_agent_task(new_task: NewAgentTask):
+@app.post("/create")
+def create_agent_task(new_task: Request):
 
     agents_collection.insert_one(new_task.dict())
     return {
